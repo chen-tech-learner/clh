@@ -3,8 +3,6 @@ import time
 
 FILE_LIST = [
     ("clh.m3u", "clh_out.m3u"),
-    ("clh1.m3u", "clh1_out.m3u"),
-    ("clh2.m3u", "clh2_out.m3u"),
 ]
 TIMEOUT = 8
 
