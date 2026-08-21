@@ -1,8 +1,11 @@
 import requests
 import time
 
-IN_FILE = "clh.m3u"
-OUT_FILE = "clh_out.m3u"
+FILE_LIST = [
+    ("clh.m3u", "clh_out.m3u"),
+    ("clh1.m3u", "clh1_out.m3u"),
+    ("clh2.m3u", "clh2_out.m3u"),
+]
 TIMEOUT = 8
 
 def check_url(url):
@@ -12,8 +15,8 @@ def check_url(url):
     except Exception:
         return False
 
-def main():
-    with open(IN_FILE, "r", encoding="utf-8") as f:
+def process_file(in_path, out_path):
+    with open(in_path, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
     out_lines = []
@@ -38,9 +41,13 @@ def main():
             temp_line = None
         time.sleep(0.2)
 
-    with open(OUT_FILE, "w", encoding="utf-8") as f:
+    with open(out_path, "w", encoding="utf-8") as f:
         f.writelines(out_lines)
-    print(f"总共:{total}个频道，存活:{ok}，已输出到 {OUT_FILE}")
+    print(f"文件 {in_path}：总共{total}个，存活{ok}，输出→{out_path}")
+
+def main():
+    for in_f, out_f in FILE_LIST:
+        process_file(in_f, out_f)
 
 if __name__ == "__main__":
     main()
