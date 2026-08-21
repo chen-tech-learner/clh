@@ -1,24 +1,46 @@
-# run.py 模板示例
 import requests
+import time
 
-# =========在这里填你的源地址=========
-source_url = "这里替换成你的直播源txt/m3u地址"
-out1 = "clh.m3u"
-out2 = "clh1.m3u"
-out3 = "clh2.m3u"
-# ==================================
+IN_FILE = "clh.m3u"
+OUT_FILE = "clh_out.m3u"
+TIMEOUT = 8
 
-def fetch_save(url, savepath):
+def check_url(url):
     try:
-        resp = requests.get(url,timeout=30)
-        resp.encoding = "utf‑8"
-        with open(savepath,"w",encoding="utf‑8") as f:
-            f.write(resp.text)
-        print(f"已写入 {savepath}")
-    except Exception as e:
-        print(f"获取失败 {url} , {e}")
+        resp = requests.head(url, timeout=TIMEOUT, allow_redirects=True)
+        return resp.status_code == 200
+    except Exception:
+        return False
 
-# 示例：只更新第一个文件，你可以按需求改
-fetch_save(source_url, out1)
-# fetch_save(source_url, out2)
-# fetch_save(source_url, out3)
+def main():
+    with open(IN_FILE, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+
+    out_lines = []
+    temp_line = None
+    total = 0
+    ok = 0
+
+    for line in lines:
+        line = line.rstrip("\n")
+        if line.startswith("#EXTM3U"):
+            out_lines.append(line + "\n")
+            continue
+        if line.startswith("#EXTINF:"):
+            temp_line = line
+            continue
+        if temp_line and (line.startswith("http://") or line.startswith("https://")):
+            total += 1
+            if check_url(line):
+                ok += 1
+                out_lines.append(temp_line + "\n")
+                out_lines.append(line + "\n")
+            temp_line = None
+        time.sleep(0.2)
+
+    with open(OUT_FILE, "w", encoding="utf-8") as f:
+        f.writelines(out_lines)
+    print(f"总共:{total}个频道，存活:{ok}，已输出到 {OUT_FILE}")
+
+if __name__ == "__main__":
+    main()
